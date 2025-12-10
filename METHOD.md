@@ -48,27 +48,27 @@ This is enforced by loader validation and assumed by all curve/risk functions.
 ### 3.1 Model Form
 The NSS model represents a smooth yield curve using 6 parameters:
 
-\[
+$$
 y(t) =
 \beta_0
 + \beta_1 \cdot L_1(t, \tau_1)
 + \beta_2 \cdot S_1(t, \tau_1)
 + \beta_3 \cdot S_2(t, \tau_2)
-\]
+$$
 
 where:
 
-\[
+$$
 L_1(t,\tau) = \frac{1 - e^{-t/\tau}}{t/\tau}
-\]
+$$
 
-\[
+$$
 S_1(t,\tau) = L_1(t,\tau) - e^{-t/\tau}
-\]
+$$
 
-\[
+$$
 S_2(t,\tau) = \frac{1 - e^{-t/\tau}}{t/\tau} - e^{-t/\tau}
-\]
+$$
 
 Parameters:
 
@@ -93,22 +93,22 @@ Fit NSS parameters to an observed yield snapshot at a given date.
 ### 4.2 Method
 We solve a least-squares problem:
 
-\[
+$$
 \min_{\theta} \sum_{i=1}^{N}
 \left(
 y_{\text{NSS}}(t_i; \theta) - y_{\text{obs}}(t_i)
 \right)^2
-\]
+$$
 
 where:
 
-- \(\theta = (\beta_0,\beta_1,\beta_2,\beta_3,\tau_1,\tau_2)\)  
-- \(t_i\) are maturities implied by the tenor list
+- $$\theta = (\beta_0,\beta_1,\beta_2,\beta_3,\tau_1,\tau_2)$$  
+- $$t_i$$ are maturities implied by the tenor list
 
 ### 4.3 Numerical Choices
 - Optimizer: `scipy.optimize.least_squares`  
 - Bounds:
-  - \(\tau_1, \tau_2 > 0\)  
+  - $$\tau_1, \tau_2 > 0$$  
   - broad ranges on β parameters to avoid over-constraining
 
 ### 4.4 Fit Quality
@@ -132,9 +132,9 @@ The calibration returns diagnostics including:
 ### 5.2 Discount Factor Assumption
 Discounting uses **continuous compounding**:
 
-\[
+$$
 DF(t) = e^{-y(t)\cdot t}
-\]
+$$
 
 This is a clean modeling simplification that keeps pricing consistent across:
 - DV01  
@@ -154,17 +154,17 @@ The instrument layer implements:
   - no optionality
 
 ### 6.2 Cashflows
-For notional \(N\), coupon rate \(c\), frequency \(f\):
+For notional $$N$$, coupon rate $$c$$, frequency $$f$$:
 
 - Coupon per period:
-\[
+$$
 CF_{\text{coupon}} = \frac{N \cdot c}{f}
-\]
+$$
 
 - Final cashflow includes principal:
-\[
+$$
 CF_{\text{final}} = \frac{N \cdot c}{f} + N
-\]
+$$
 
 ### 6.3 Time Measurement
 A simplified day-count is used:
@@ -173,14 +173,14 @@ A simplified day-count is used:
 
 Year fraction:
 
-\[
+$$
 t = \frac{\text{days between settlement and payment}}{365}
-\]
+$$
 
 ### 6.4 Pricing Formula
-\[
+$$
 PV = \sum_{i} CF_i \cdot DF(t_i)
-\]
+$$
 
 ---
 
@@ -190,20 +190,20 @@ PV = \sum_{i} CF_i \cdot DF(t_i)
 Key-rate DV01 measures sensitivity of price to a **1 bp move in a specific tenor**, holding all other quoted tenors unchanged.
 
 ### 7.2 Bump-and-Reprice Method
-For each tenor \(k\):
+For each tenor $$k$$:
 
-1) Start with observed yields \(y_{\text{obs}}\).  
+1) Start with observed yields $$y_{\text{obs}}$$.  
 2) Create a shocked set:
-\[
+$$
 y'_{\text{obs},k} = y_{\text{obs},k} + 0.0001
-\]
-3) Recalibrate NSS to \(y'_{\text{obs}}\).  
+$$
+3) Recalibrate NSS to $$y'_{\text{obs}}$$.  
 4) Reprice instrument/portfolio.  
 5) Compute:
 
-\[
+$$
 \text{KRDV01}_k = PV_k^{+1bp} - PV_{\text{base}}
-\]
+$$
 
 ### 7.3 Sign Convention
 - If rates rise, bond prices typically fall.  
@@ -220,33 +220,33 @@ Evaluate portfolio P&L under structured, larger shocks.
 All scenarios are applied to the **observed tenor yields**, then NSS is recalibrated.
 
 #### 8.2.1 Parallel
-\[
+$$
 y'_i = y_i + s
-\]
+$$
 
 #### 8.2.2 Steepener (simple linear weighting)
 Long-end rates rise more than short-end:
 
-\[
+$$
 y'_i = y_i + w_i \cdot s
-\]
+$$
 
 with:
-- \(w_i\) increasing from 0 (shortest tenor) to 1 (longest tenor)
+- $$w_i$$ increasing from 0 (shortest tenor) to 1 (longest tenor)
 
 #### 8.2.3 Flattener (inverse weighting)
 Short-end rates rise more than long-end:
 
-\[
+$$
 y'_i = y_i + (1-w_i)\cdot s
-\]
+$$
 
 ### 8.3 Output
 For each scenario:
 
-\[
+$$
 P\&L = PV_{\text{stressed}} - PV_{\text{base}}
-\]
+$$
 
 ---
 
@@ -261,24 +261,24 @@ This toolkit implements **full revaluation VaR**, meaning:
 
 #### 9.1.1 Method
 1) Choose a base date (default: latest).  
-2) Extract the base yields vector \(y_0\).  
+2) Extract the base yields vector $$y_0$$.  
 3) Compute historical daily changes:
-\[
+$$
 \Delta y_t = y_t - y_{t-1}
-\]
+$$
 4) Create shocked curves:
-\[
+$$
 y'_t = y_0 + \Delta y_t
-\]
-5) Refit NSS for each \(y'_t\).  
+$$
+5) Refit NSS for each $$y'_t$$.  
 6) Reprice to get a P&L distribution.
 
 #### 9.1.2 VaR Estimation
-For confidence level \(c\):
+For confidence level $$c$$:
 
-\[
+$$
 VaR_c = \max(0, -Q_{1-c}(P\&L))
-\]
+$$
 
 Reported VaR is a **positive loss magnitude**.
 
@@ -287,13 +287,13 @@ Reported VaR is a **positive loss magnitude**.
 #### 9.2.1 Method
 1) Estimate covariance of daily tenor changes from history.  
 2) Simulate:
-\[
+$$
 \Delta y \sim \mathcal{N}(0, \Sigma)
-\]
+$$
 3) Apply:
-\[
+$$
 y' = y_0 + \Delta y
-\]
+$$
 4) Refit NSS and reprice for each simulation.  
 5) Compute VaR from the simulated P&L distribution.
 
@@ -307,9 +307,9 @@ The portfolio holds a list of positions:
 - (instrument, quantity)
 
 ### 10.2 PV
-\[
+$$
 PV_{\text{portfolio}} = \sum_i q_i \cdot PV_i
-\]
+$$
 
 ### 10.3 Risk Reuse
 The portfolio class implements:
