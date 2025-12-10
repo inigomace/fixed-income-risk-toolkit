@@ -53,7 +53,7 @@ The NSS model represents a smooth yield curve using 6 parameters:
 
 $$
 y(t)=
-\beta_0
+β0
 + \beta_1\,L_1(t,\tau_1)
 + \beta_2\,S_1(t,\tau_1)
 + \beta_3\,S_2(t,\tau_2)
