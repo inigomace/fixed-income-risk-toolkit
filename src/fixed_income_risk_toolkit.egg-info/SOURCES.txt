@@ -1,9 +1,0 @@
-pyproject.toml
-src/firisk/__init__.py
-src/firisk/arc/test_loader.py
-src/firisk/arc/untitled0.py
-src/fixed_income_risk_toolkit.egg-info/PKG-INFO
-src/fixed_income_risk_toolkit.egg-info/SOURCES.txt
-src/fixed_income_risk_toolkit.egg-info/dependency_links.txt
-src/fixed_income_risk_toolkit.egg-info/requires.txt
-src/fixed_income_risk_toolkit.egg-info/top_level.txt
