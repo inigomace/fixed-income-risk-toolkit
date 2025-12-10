@@ -18,16 +18,16 @@ Designed as a learning project and portfolio piece for rates / risk / quant inte
 
 ### Yield Curve Modeling
 - NSS parametric curve implementation
-- Single-date calibration using real Treasury history
+- Single-date calibration using real Treasury-style history
 - Curve object exposing:
   - model yields
-  - zero rates
+  - zero rates (model-implied)
   - discount factors
 
 ### Instruments
 - Fixed-coupon bullet bond support
 - Cashflow schedule generation
-- Discounted PV pricing via NSSCurve
+- Discounted PV pricing via the NSS curve
 
 ### Risk
 - **Key-rate DV01 / PVBP**
@@ -52,7 +52,20 @@ Designed as a learning project and portfolio piece for rates / risk / quant inte
 
 ---
 
-## 2. Tech Stack
+## 2. Methodology
+
+- **Curve:** NSS fitted by least squares to observed tenor yields.
+- **Pricing:** fixed-coupon bullet cashflows discounted using NSS-implied discount factors.
+- **Key-rate DV01:** bump a single tenor by 1bp, refit NSS, reprice, and record price change.
+- **Stress:** apply parallel/steepener/flattener shocks to tenor yields, refit NSS, reprice.
+- **VaR:** full revaluation using historical tenor moves and multivariate-normal Monte Carlo shocks.
+- **Portfolio:** aggregates bond PV and reuses the same risk engines through a shared pricing interface.
+
+For implementation assumptions and defaults (tenors, day count, bump sizes, VaR lookbacks), see **ASSUMPTIONS.md**.
+
+---
+
+## 3. Tech Stack
 
 - **Python:** 3.10+ recommended
 - **Core:** `numpy`, `pandas`, `scipy`, `matplotlib`
@@ -60,13 +73,14 @@ Designed as a learning project and portfolio piece for rates / risk / quant inte
 
 ---
 
-## 3. Project Structure
+## 4. Project Structure
 
 Current structure is package-first with demos and tests inside the `firisk` namespace:
 
 ```text
 .
 ├─ README.md
+├─ ASSUMPTIONS.md
 ├─ pyproject.toml
 └─ src/
    └─ firisk/
