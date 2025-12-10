@@ -1,7 +1,14 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Dec 10 15:18:39 2025
+# src/firisk/data/__init__.py
 
-@author: Inigo
+"""
+Data loading and validation.
+
+Provides functions and abstractions for working with yield history data.
 """
 
+from .loaders import load_yield_history, validate_yield_table
+
+__all__ = [
+    "load_yield_history",
+    "validate_yield_table",
+]
