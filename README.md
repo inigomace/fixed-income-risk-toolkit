@@ -66,7 +66,7 @@ Designed as a learning project and portfolio piece for rates / risk / quant inte
 ├─ src/
 │  └─ firisk/
 │     ├─ data/
-│     │  ├─ sources.py      # Data source abstractions (e.g. local CSV)
+│     │  ├─ yields.csv      # Data source abstractions (e.g. local CSV)
 │     │  └─ loaders.py      # Load + validate yield history
 │     ├─ curve/
 │     │  ├─ nss.py          # NSS model functions
