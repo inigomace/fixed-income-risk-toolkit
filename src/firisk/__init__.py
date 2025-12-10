@@ -1,7 +1,23 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Dec 10 15:18:20 2025
+# src/firisk/utils/__init__.py
 
-@author: Inigo
+"""
+Shared utility functions used across the toolkit.
+
+Includes:
+- Tenor parsing/conversion
+- Date-related helpers
 """
 
+from .dates import (
+    normalize_tenor,
+    sort_tenors,
+    tenor_to_years,
+    year_fraction_act365,
+)
+
+__all__ = [
+    "normalize_tenor",
+    "sort_tenors",
+    "tenor_to_years",
+    "year_fraction_act365",
+]
