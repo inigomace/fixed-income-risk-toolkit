@@ -1,7 +1,22 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Dec 10 13:58:09 2025
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
 
-@author: Inigo
-"""
+[project]
+name = "fixed-income-risk-toolkit"
+version = "0.1.0"
+description = "Fixed income curve and risk analytics (NSS, DV01, stress, VaR)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy",
+  "pandas",
+  "scipy",
+  "matplotlib"
+]
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
