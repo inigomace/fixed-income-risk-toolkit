@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Optional, Sequence
 import warnings
 
+from firisk.utils.dates import normalize_tenor, sort_tenors, to_datetime_index, tenor_to_years
+
 import pandas as pd
 
 
