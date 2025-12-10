@@ -12,9 +12,9 @@ This toolkit implements a compact fixed-income risk pipeline built around:
 2) A parametric curve model (Nelson–Siegel–Svensson).  
 3) Fixed-coupon bullet bond pricing.  
 4) Risk measures:
-   - key-rate DV01 / PVBP
-   - curve stress tests
-   - historical VaR
+   - key-rate DV01 / PVBP  
+   - curve stress tests  
+   - historical VaR  
    - Monte Carlo VaR  
 5) Portfolio aggregation.
 
@@ -25,6 +25,7 @@ The implementation is intended as an educational and interview-ready demonstrati
 ## 2. Data Conventions
 
 ### 2.1 Yield Inputs
+
 The yield history is represented as a table:
 
 - **Index:** dates  
@@ -35,6 +36,7 @@ Current default tenors used throughout the risk stack:
 - `3M, 6M, 1Y, 2Y, 3Y, 5Y, 7Y, 10Y`
 
 ### 2.2 Yield Units
+
 All yields in the codebase are treated as **decimals**, not percent:
 
 - 4.50% → `0.045`
@@ -46,6 +48,7 @@ This is enforced by loader validation and assumed by all curve/risk functions.
 ## 3. Nelson–Siegel–Svensson (NSS) Yield Curve
 
 ### 3.1 Model Form
+
 The NSS model represents a smooth yield curve using 6 parameters:
 
 $$
@@ -78,6 +81,7 @@ Parameters:
 - **τ1, τ2**: shape/decay controls
 
 ### 3.2 Interpretation of Output
+
 The model is used to produce:
 
 - **model-implied yields** at arbitrary maturities  
@@ -88,9 +92,11 @@ The model is used to produce:
 ## 4. Calibration (Curve Fitting)
 
 ### 4.1 Objective
+
 Fit NSS parameters to an observed yield snapshot at a given date.
 
 ### 4.2 Method
+
 We solve a least-squares problem:
 
 $$
@@ -106,12 +112,14 @@ where:
 - $t_i$ are maturities implied by the tenor list
 
 ### 4.3 Numerical Choices
+
 - Optimizer: `scipy.optimize.least_squares`  
 - Bounds:
   - $\tau_1,\tau_2>0$  
   - broad ranges on β parameters to avoid over-constraining
 
 ### 4.4 Fit Quality
+
 The calibration returns diagnostics including:
 
 - RMSE  
@@ -123,6 +131,7 @@ The calibration returns diagnostics including:
 ## 5. Curve Object and Discounting
 
 ### 5.1 NSSCurve
+
 `NSSCurve` is a lightweight wrapper around fitted parameters that exposes:
 
 - `yield_at(t)`  
@@ -130,6 +139,7 @@ The calibration returns diagnostics including:
 - `yields_for_tenors([...])`
 
 ### 5.2 Discount Factor Assumption
+
 Discounting uses **continuous compounding**:
 
 $$
@@ -137,6 +147,7 @@ DF(t)=e^{-y(t)\,t}
 $$
 
 This is a clean modeling simplification that keeps pricing consistent across:
+
 - DV01  
 - stress testing  
 - VaR
@@ -146,6 +157,7 @@ This is a clean modeling simplification that keeps pricing consistent across:
 ## 6. Fixed-Coupon Bullet Bond Pricing
 
 ### 6.1 Instrument Type
+
 The instrument layer implements:
 
 - **Fixed-coupon bullet bonds**
@@ -154,6 +166,7 @@ The instrument layer implements:
   - no optionality
 
 ### 6.2 Cashflows
+
 For notional $N$, coupon rate $c$, frequency $f$:
 
 Coupon per period:
@@ -169,6 +182,7 @@ CF_{\text{final}}=\frac{N\,c}{f}+N
 $$
 
 ### 6.3 Time Measurement
+
 A simplified day-count is used:
 
 - **ACT/365**
@@ -190,9 +204,11 @@ $$
 ## 7. Key-Rate DV01 / PVBP
 
 ### 7.1 Purpose
+
 Key-rate DV01 measures sensitivity of price to a **1 bp move in a specific tenor**, holding all other quoted tenors unchanged.
 
 ### 7.2 Bump-and-Reprice Method
+
 For each tenor $k$:
 
 1) Start with observed yields $y_{\text{obs}}$.  
@@ -211,6 +227,7 @@ $$
 $$
 
 ### 7.3 Sign Convention
+
 - If rates rise, bond prices typically fall.  
 - Therefore KRDV01 values are typically **negative** for long positions.
 
@@ -219,9 +236,11 @@ $$
 ## 8. Curve Stress Testing
 
 ### 8.1 Goal
+
 Evaluate portfolio P&L under structured, larger shocks.
 
 ### 8.2 Scenarios
+
 All scenarios are applied to the **observed tenor yields**, then NSS is recalibrated.
 
 #### 8.2.1 Parallel
@@ -231,6 +250,7 @@ y'_i = y_i + s
 $$
 
 #### 8.2.2 Steepener (simple linear weighting)
+
 Long-end rates rise more than short-end:
 
 $$
@@ -238,9 +258,11 @@ y'_i = y_i + w_i\,s
 $$
 
 with:
+
 - $w_i$ increasing from 0 (shortest tenor) to 1 (longest tenor)
 
 #### 8.2.3 Flattener (inverse weighting)
+
 Short-end rates rise more than long-end:
 
 $$
@@ -248,10 +270,11 @@ y'_i = y_i + (1-w_i)\,s
 $$
 
 ### 8.3 Output
+
 For each scenario:
 
 $$
-P\&L = PV_{\text{stressed}} - PV_{\text{base}}
+\text{P\&L} = PV_{\text{stressed}} - PV_{\text{base}}
 $$
 
 ---
@@ -259,6 +282,7 @@ $$
 ## 9. Value at Risk (VaR)
 
 This toolkit implements **full revaluation VaR**, meaning:
+
 - we shock yields  
 - recalibrate NSS  
 - reprice the instrument/portfolio
@@ -266,6 +290,7 @@ This toolkit implements **full revaluation VaR**, meaning:
 ### 9.1 Historical VaR
 
 #### 9.1.1 Method
+
 1) Choose a base date (default: latest).  
 2) Extract the base yields vector $y_0$.  
 3) Compute historical daily changes:
@@ -284,10 +309,11 @@ $$
 6) Reprice to get a P&L distribution.
 
 #### 9.1.2 VaR Estimation
+
 For confidence level $c$:
 
 $$
-VaR_c = \max\!\left(0,\,-Q_{1-c}(P\&L)\right)
+VaR_c = \max\left(0,\,-Q_{1-c}(\text{P\&L})\right)
 $$
 
 Reported VaR is a **positive loss magnitude**.
@@ -295,8 +321,9 @@ Reported VaR is a **positive loss magnitude**.
 ### 9.2 Monte Carlo VaR
 
 #### 9.2.1 Method
+
 1) Estimate covariance of daily tenor changes from history.  
-2) Simulate:
+2) Simulate shocks:
 
 $$
 \Delta y \sim \mathcal{N}(0,\Sigma)
@@ -316,6 +343,7 @@ $$
 ## 10. Portfolio Aggregation
 
 ### 10.1 Structure
+
 The portfolio holds a list of positions:
 
 - (instrument, quantity)
@@ -327,6 +355,7 @@ PV_{\text{portfolio}} = \sum_i q_i\,PV_i
 $$
 
 ### 10.3 Risk Reuse
+
 The portfolio class implements:
 
 - `price(curve, settlement_date)`
@@ -344,6 +373,7 @@ The test suite focuses on:
 - regression protection for refactors
 
 Examples:
+
 - discount factors behave sensibly for positive curves  
 - calibration completes with finite parameters  
 - key-rate DV01 returns all requested tenors  
@@ -370,10 +400,15 @@ These choices are appropriate for a compact educational risk engine and can be e
 ## 13. Reproducibility
 
 - A small yield sample is included in:
+
   - `src/firisk/data/yields.csv`
+
 - Demo scripts in:
+
   - `src/firisk/scripts/`
+
   reproduce:
+
   - bond pricing  
   - key-rate DV01  
   - stress tests  
